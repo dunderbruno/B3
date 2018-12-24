@@ -5,6 +5,8 @@ import sqlite3
 conn = sqlite3.connect('b3.db')
 cursor = conn.cursor()
 
+cursor.execute("""CREATE TABLE empresas (name, code)""")
+
 with open('codigos.txt', 'r') as codigos:
     lista = codigos.readlines()
 
