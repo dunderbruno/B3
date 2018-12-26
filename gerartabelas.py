@@ -7,6 +7,8 @@ inicio = time.time()
 
 conn = sqlite3.connect('b3.db')
 cursor = conn.cursor()
+command = 'CREATE TABLE ibovespa (id PRIMARYKEY, data TEXT, resultado INTEGER, var REAL, var_percentual REAL, ultima REAL, maxima REAL, minima REAL, abertura REAL, volume INTEGER)'
+cursor.execute("""%s""" % command)
 
 nomes = cursor.execute("""SELECT code FROM empresas""")
 for i in nomes.fetchall():
