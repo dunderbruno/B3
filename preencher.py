@@ -18,7 +18,7 @@ hoje = str(date.today())
 iteracoes = 0
 
 def getvalues(start):
-    for i in range(start, int(len(codigos) - 4 + start), 4):
+    for i in range(start, int(len(codigos))+1, 4):
         # print('Thread %d' % start)
         os.system('clear')
         global iteracoes
