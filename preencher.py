@@ -5,51 +5,47 @@ from bs4 import BeautifulSoup
 from datetime import date
 import time
 import os
+from threading import Thread
 
-inicio = time.time()
 
+conn = sqlite3.connect('b3.db', check_same_thread=False)
+cursor = conn.cursor()
+codigos = cursor.execute("""SELECT code FROM empresas""").fetchall()
+conn.close()
+urlbase = 'http://cotacoes.economia.uol.com.br/acao/index.html?codigo='
 hoje = str(date.today())
 
-conn = sqlite3.connect('b3.db')
-cursor = conn.cursor()
+iteracoes = 0
 
-codigos = cursor.execute("""SELECT code FROM empresas""")
-
-urlbase = 'http://cotacoes.economia.uol.com.br/acao/index.html?codigo='
-
-baixados = 0
-for i in codigos.fetchall():
-    print('entrei')
-    os.system('clear')
-    baixados += 1
-    print('Baixados %d / 1974.' % baixados)
-    html = urlopen(urlbase+i[0])
-    bsObj = BeautifulSoup(html.read(), 'html5lib')
-    body = bsObj.findAll("td")
-    dados = [i.getText() for i in body]
-    if len(dados) > 1:
-        del(dados[0])
-        dados = [hoje] + dados
-        # print(dados)
-        command = 'INSERT INTO %s (data, var, var_percentual, ultima, maxima, minima, abertura, volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?)' % i[0][:-3]
-        cursor.execute("""%s""" % command, dados)
-
-urlibov = 'http://cotacoes.economia.uol.com.br/bolsas/index.html?indice=.BVSP'
-
-html = urlopen(urlibov)
-bsObj = BeautifulSoup(html.read(), 'html5lib')
-body = bsObj.findAll("td")
-dados = [i.getText() for i in body]
-if len(dados) > 1:
-    del(dados[0])
-    dados = [hoje] + dados
-    print(dados)
-    command = 'INSERT INTO ibovespa (data, var, var_percentual, ultima, maxima, minima, abertura, volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    cursor.execute("""%s""" % command, dados)
+def getvalues(start):
+    for i in range(start, int(len(codigos) - 4 + start), 4):
+        # print('Thread %d' % start)
+        os.system('clear')
+        global iteracoes
+        iteracoes += 1
+        print('Baixados %d / 1974.' % iteracoes)
+        html = urlopen(urlbase+codigos[i][0])
+        bsObj = BeautifulSoup(html.read(), 'html5lib')
+        body = bsObj.findAll("td")
+        dados = [j.getText() for j in body]
+        if len(dados) > 1:
+            del(dados[0])
+            dados = [hoje] + dados
+            # print(dados)
+            conn = sqlite3.connect('b3.db', check_same_thread=False)
+            cursor = conn.cursor()
+            command = 'INSERT INTO %s (data, var, var_percentual, ultima, maxima, minima, abertura, volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?)' % codigos[i][0][:-3]
+            cursor.execute("""%s""" % command, dados)
+            conn.commit()
+            conn.close()
 
 
-conn.commit()
-conn.close()
-fim = time.time()
+a = Thread(target=getvalues, args=(0,))
+b = Thread(target=getvalues, args=(1,))
+c = Thread(target=getvalues, args=(2,))
+d = Thread(target=getvalues, args=(3,))
 
-print((fim-inicio)/60)
+a.start()
+b.start()
+c.start()
+d.start()
