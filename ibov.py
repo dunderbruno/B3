@@ -23,3 +23,6 @@ if len(dados) > 1:
     print(dados)
     command = 'INSERT INTO ibovespa (data, var, var_percentual, ultima, maxima, minima, abertura, volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     cursor.execute("""%s""" % command, dados)
+
+conn.commit()
+conn.close()
