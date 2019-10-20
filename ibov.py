@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import date
 import time
 import os
+import ssl
 
 hoje = str(date.today())
 
@@ -13,7 +14,8 @@ cursor = conn.cursor()
 
 urlibov = 'http://cotacoes.economia.uol.com.br/bolsas/index.html?indice=.BVSP'
 
-html = urlopen(urlibov)
+context = ssl._create_unverified_context()
+html = urlopen(urlibov, context=context)
 bsObj = BeautifulSoup(html.read(), 'html5lib')
 body = bsObj.findAll("td")
 dados = [i.getText() for i in body]
